@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -90,6 +91,13 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
     return user;
 }
+
+//Delete uesr task when user is removed
+userSchema.pre('remove', async function(next){
+    const user = this;
+    await Task.deleteMany({ owner: user._id })
+    next();
+})
 
 // Hash the plain text password before saving
 userSchema.pre('save', async function(next){
